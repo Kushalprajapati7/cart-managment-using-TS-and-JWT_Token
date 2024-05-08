@@ -93,7 +93,7 @@ export const deleteCart = async (req: Request, res: Response) => {
     catch (error: any) {
         res.status(500).json({ message: error.message });
     }
-}
+}    
 
 export const showCart = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
