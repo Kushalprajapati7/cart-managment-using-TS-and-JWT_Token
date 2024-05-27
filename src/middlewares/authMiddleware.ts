@@ -10,7 +10,7 @@ async function verifyToken(req: CustomRequest, res: Response, next: NextFunction
     try {
         // console.log("Inide middlwarw");
         
-        const decoded = jwt.verify(token, 'KushalP') as { userId: string };
+        const decoded = jwt.verify(token, 'KP') as { userId: string };
         // console.log("d",decoded.userId);
         req.userId = decoded.userId;
         // console.log(req.userId);

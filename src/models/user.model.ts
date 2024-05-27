@@ -1,10 +1,5 @@
 import mongoose,{Document,Schema} from "mongoose";
-
-
-export interface IUser extends Document{
-    username:string,
-    password: string
-}
+import { IUser } from "../interfaces/userInterface";
 
 const userSchema :Schema = new Schema({
     username :{type:String , required: [true,"UserName is Required"]},

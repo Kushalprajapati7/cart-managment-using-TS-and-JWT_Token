@@ -1,13 +1,5 @@
 import mongoose,{Document,Model,Schema} from "mongoose";
-import { IUser } from "./user.model";
-
-export interface IProfile extends Document{
-    UserId : IUser['_id'],
-    name: string,
-    dob: Date,
-    email: string,
-    gender: string
-}
+import { IProfile } from "../interfaces/profilrInterface";
 
 const profileSchema: Schema = new Schema({
 

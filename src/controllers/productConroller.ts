@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import Product, { IProduct } from '../models/product.model';
+import Product from '../models/product.model';
+import { IProduct } from '../interfaces/productInterface';
 
 
 export const getAllproducta = async (req: Request, res: Response): Promise<void> => {
