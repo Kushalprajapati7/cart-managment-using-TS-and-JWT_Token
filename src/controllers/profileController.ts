@@ -1,17 +1,16 @@
 import { Request, Response } from "express";
-import Profile, { IProfile } from '../models/profile.model'
+import Profile from '../models/profile.model'
 import CustomRequest from "../types/customeRequest";
-import Cart from "../models/cart.Model";
+import profileServices from "../services/profileServices";
 
-export const profileCreate = async (req: CustomRequest, res: Response): Promise<void> => {
+export const profileCreate = async (req: Request, res: Response): Promise<void> => {
     try {
-        // console.log("Hey Pr");
+        const userId = (req as CustomRequest).userId;
+        const profile = req.body;
+        profile.userId = userId;
 
-        const userId = req.userId;
-        const { name, dob, email, gender } = req.body
-        const newProfile: IProfile = new Profile({ userId, name, dob, email, gender });
+        const newProfile = await profileServices.createProfile(profile)
 
-        await newProfile.save();
         res.status(201).json(newProfile);
     }
     catch (error: any) {
@@ -21,25 +20,45 @@ export const profileCreate = async (req: CustomRequest, res: Response): Promise<
 }
 
 
-export const showAllProfiles = async (req: CustomRequest, res: Response): Promise<void> => {
+export const showAllProfiles = async (req: Request, res: Response): Promise<void> => {
     try {
 
-        // const token = req.headers.authorization?.split(' ')[1];
-        // console.log(token);
-        
-        const userId = req.userId;
-        console.log("USerID",userId);
-        
-        const profile = await Profile.find( {userId} );
-        console.log(profile);
-        
+        const userId = (req as CustomRequest).userId;
+        const profiles = await profileServices.showAllProfiles();
+
+        const userProfile = profiles.filter((user: any) => user.userId == userId);
+        if (userProfile.length ===0) {
+            res.status(404).json({ message: "Profile Not found for this User" })
+            return
+        }
+        res.status(200).json(userProfile);
+    }
+    catch (error: any) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+export const showAllProfileById = async (req: Request, res: Response): Promise<void> => {
+    try {
+
+        const profileId = req.params.id;
+        const userId = (req as CustomRequest).userId;
+
+        const allprofiles = await profileServices.showAllProfiles();
+
+        const userProfile = allprofiles.filter((user: any) => user.userId == userId);
+
+        if (userProfile.length === 0) {
+            res.status(404).json({ message: "Profile Not found for this User" })
+            return
+        }
+        const profile = userProfile.find((user: any) => user._id == profileId)
 
         if (!profile) {
-            res.status(404).json({ message: 'Profile not found' });
-            return;
+            res.status(404).json({ message: "Profile Not found " })
+            return
         }
 
-        // Send profile in the response
         res.status(200).json(profile);
     }
     catch (error: any) {
@@ -47,28 +66,28 @@ export const showAllProfiles = async (req: CustomRequest, res: Response): Promis
     }
 }
 
-export const deleteProfile = async (req: CustomRequest, res: Response): Promise<void> => {
+
+export const deleteProfile = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.userId;
-        const id = req.params.id;
+        const userId = (req as CustomRequest).userId;
 
-        const profile: IProfile | null = await Profile.findOne({ userId });
+        const profileId = req.params.id;
+        const allprofiles = await profileServices.showAllProfiles();
 
-        console.log(profile);
+        const userProfile = allprofiles.filter((user: any) => user.userId == userId);
 
-        if (!profile) {
-            res.status(404).json({ message: 'Profile not found' });
-            return;
+        if (userProfile.length === 0) {
+            res.status(404).json({ message: "Profile Not found for this User" })
+            return
         }
 
-        if (profile._id.toString() !== id) {
-            res.status(403).json({ message: 'You are not authorized to delete this profile' });
-            return;
+        const profile = userProfile.map((userProfile) => userProfile._id?.toString() === profileId)
+        if (profile.includes(false)) {
+            res.status(404).json({ message: "Profile Not found for this User" })
+            return
         }
 
-        await Cart.findByIdAndDelete(id)
-        await Profile.findByIdAndDelete(id);
-
+        await profileServices.deleteProfile(profileId)
         res.status(200).json({ message: 'Profile Deleted' });
 
 
@@ -78,23 +97,30 @@ export const deleteProfile = async (req: CustomRequest, res: Response): Promise<
     }
 }
 
-export const updateProfile = async (req:CustomRequest, res:Response):Promise<void>=>{
-    try{    
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
 
-        const userId = req.userId;
-        const id = req.params.id;
-        
-        const profile = await Profile.findByIdAndUpdate(id, req.body, { new: true });
-        console.log(profile);
+        const userId = (req as CustomRequest).userId;
+        const profileId = req.params.id;
+        const profileData = req.body;
 
-        if(!profile){
-            res.status(404).json({ message: 'Profile not found' });
-            return;
+        const profileByUser = await Profile.find({ userId });
+        if (!profileByUser) {
+            res.status(404).json({ message: "Profile Not found for this User" })
+            return
         }
-        res.status(200).json({message:"Profile Updated",data:profile })
-        
+
+        const profile = profileByUser.map((user) => user._id.toString() === profileId)
+
+        if (!profile.includes(false)) {
+            res.status(404).json({ message: "Profile Not found" })
+            return
+        }
+        const updatedProfile = await profileServices.updateProfile(profileId, profileData)
+        res.status(200).json({ message: "Profile Updated", data: updatedProfile })
+
     }
-    catch(error:any){
+    catch (error: any) {
         res.status(500).json({ message: error.message })
     }
 }

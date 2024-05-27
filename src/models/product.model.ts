@@ -1,11 +1,5 @@
 import mongoose,{Document,Schema} from "mongoose";
-
-export interface IProduct extends Document{
-    name:string,
-    description:string,
-    price:number,
-    stock:number,
-}
+import { IProduct } from "../interfaces/productInterface";
 
 const ProductSchema: Schema = new Schema({
     name:{

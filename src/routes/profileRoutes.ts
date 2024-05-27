@@ -1,4 +1,4 @@
-import { profileCreate,showAllProfiles,deleteProfile,updateProfile} from "../controllers/profileController";
+import { profileCreate,showAllProfiles,deleteProfile,updateProfile, showAllProfileById} from "../controllers/profileController";
 import express from 'express'
 import verifyToken from "../middlewares/authMiddleware";
 
@@ -9,5 +9,6 @@ router.post('/profile', profileCreate);
 router.get('/profile', showAllProfiles);
 router.delete('/profile/:id',deleteProfile);
 router.put('/profile/:id',updateProfile);
+router.get('/profileById/:id', showAllProfileById)
 
 export default router;

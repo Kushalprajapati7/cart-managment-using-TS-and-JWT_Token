@@ -1,9 +1,12 @@
 import { Request, Response } from 'express'
-import User, { IUser } from '../models/user.model'
+import User from '../models/user.model'
+import { IUser } from '../interfaces/userInterface';
+import userServices from '../services/userServices';
+
 
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const users: IUser[] = await User.find();
+        const users: IUser[] = await userServices.getAllUsers();
         res.status(200).json(users)
     }
     catch (error: any) {
@@ -11,21 +14,10 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     }
 }
 
-export const createUser = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const newUser: IUser = new User(req.body);
-        await newUser.save();
-        res.status(201).json(newUser);
-    }
-    catch (error: any) {
-        res.status(500).json({ message: error.message })
-    }
-}
-
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
-        const user: IUser | null = await User.findById(id);
+        const user: IUser | null = await userServices.getUserById(id);
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;
@@ -39,8 +31,9 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 export const updateUserById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    const userData = req.body;
     try {
-        const updatedUser: IUser | null = await User.findByIdAndUpdate(id, req.body, { new: true });
+        const updatedUser: IUser = await userServices.updateUserById(id,userData)
         if (!updatedUser) {
             res.status(404).json({ message: 'User not found' });
             return;
@@ -55,7 +48,7 @@ export const updateUserById = async (req: Request, res: Response): Promise<void>
 export const deleteUserById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
-        const user: IUser | null = await User.findByIdAndDelete(id);
+        const user = await userServices.deleteUserById(id);
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;
